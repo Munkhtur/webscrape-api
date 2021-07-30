@@ -9,6 +9,7 @@ from random_user_agent.user_agent import UserAgent
 from random_user_agent.params import SoftwareName, OperatingSystem
 from selenium.common.exceptions import TimeoutException, WebDriverException
 from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
+from selenium_stealth import stealth
 
 
 def realstate(link):
@@ -54,13 +55,18 @@ def realstate(link):
         #                             desired_capabilities=capabilities)  # to toggle proxy
         browser = webdriver.Firefox(
             firefox_profile=profile, options=firefox_options, desired_capabilities=desired)
-        browser.command_executor("Page.addScriptToEvaluateOnNewDocument", {
-            "source": """
-        Object.defineProperty(navigator, 'webdriver', {
-            get: () => undefined
-        })
-    """
-        })
+        # browser.execute_async_script(
+        #     "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+
+        stealth(browser,
+                languages=["en-US", "en"],
+                vendor="Google Inc.",
+                platform="Win32",
+                webgl_vendor="Intel Inc.",
+                renderer="Intel Iris OpenGL Engine",
+                fix_hairline=True,
+                )
+
         # browser = webdriver.Firefox(options=firefox_options)
         browser.get(link)
         # browser.get('http://lumtest.com/myip.json')

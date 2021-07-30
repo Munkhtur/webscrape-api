@@ -1,13 +1,16 @@
 import time
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from driver import Driver
 
 
-def jbhifi(link):
-    driver = webdriver.Firefox()
-    driver.get(link)
+def jbhifi(term):
+    # url = f"https://www.jbhifi.com.au/search?query={term}&page=1"
+    url = f"https://www.jbhifi.com.au/search?query={term}&page=1&hitsPerPage=100"
+    dr = Driver()
+    try:
+        dr.driver.get(url)
+    except:
+        dr.quit()
+        return "error"
     result = []
     try:
         # main = WebDriverWait(driver, 10).until(
@@ -17,9 +20,9 @@ def jbhifi(link):
         # print(main)
 
         time.sleep(10)
-        items = driver.find_elements_by_class_name(
+        items = dr.driver.find_elements_by_class_name(
             'ais-hits--item')
-      
+
         for item in items:
             title = item.find_element_by_xpath(
                 './div/a/div/div[1]/h4').text
@@ -35,7 +38,7 @@ def jbhifi(link):
                 'price': price,
             })
     except:
-        driver.quit()
+        dr.quit()
 
-    driver.quit()
-    return result
+    dr.quit()
+    return dict(result=result)

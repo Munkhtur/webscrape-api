@@ -1,18 +1,26 @@
+
 import time
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import WebDriverException
+from driver import Driver
 
 
 def cheapflights(link):
-    driver = webdriver.Firefox()
+    # url = f"https://www.cheapflights.com.au/flight-search/{}/{}/2021-11-18?sort=bestflight_a"
+    dr = Driver()
     result = []
-    driver.get(link)
-    time.sleep(10)
-    for i in range(3):
+    try:
         try:
-            button = driver.find_element_by_link_text('Show more results')
+            dr.driver.get(link)
+        except:
+            dr.quit()
+            return "error"
+    except WebDriverException as e:
+        return str(e)
+    time.sleep(10)
+
+    for i in range(2):
+        try:
+            button = dr.driver.find_element_by_link_text('Show more results')
             button.click()
             print('click')
             time.sleep(10)
@@ -20,51 +28,30 @@ def cheapflights(link):
             break
 
     try:
-        # main = WebDriverWait(driver, 10).until(
-        #     EC.presence_of_element_located(
-        #         (By.ID, "MIBiGBN8-a-1"))
-        # )
-
-        items = driver.find_elements_by_class_name(
-            'Base-Results-HorizonResult')
-        print(items, '>>>>>>>>>>>>>>')
-        print(items[1].text)
-        print('-------------------')
+        items = dr.driver.find_elements_by_class_name(
+            'Base-Results-HorizonResult ')
 
         for item in items:
-            logo = item.find_element_by_xpath(
-                './div/div[2]/div/div[1]/div[2]/div/ol/li/div/div/div[1]/div/img').get_attribute('src')
-
-            hours = item.find_element_by_xpath(
-                './div/div[2]/div/div[1]/div[2]/div/ol/li/div/div/div[2]/div[1]').text
-
-            duration = item.find_element_by_xpath(
-                './div/div[2]/div/div[1]/div[2]/div/ol/li/div/div/div[4]/div[1]').text
-            price = item.find_element_by_xpath(
-                './div/div[2]/div/div[2]/div/div[2]/div[1]/div/div[1]/div/a/span/span').text
-            name = item.find_element_by_xpath(
-                './div/div[2]/div/div[2]/div/div[2]/div[1]/div/div[2]/div[1]/div/a/span').text
+            logo = item.find_element_by_tag_name('img').get_attribute('src')
+            price = item.find_element_by_class_name('price-text').text
+            hours = item.find_elements_by_class_name('time-pair')
+            duration = item.find_element_by_class_name('duration').text
+            name = item.find_element_by_class_name('name-only-text').text
+            link = item.find_element_by_class_name(
+                'Common-Booking-MultiBookProvider').find_element_by_tag_name('a').get_attribute('href')
 
             result.append({
                 'logo': logo,
-                'hours': hours,
+                'hours': hours[0].text + "-" + hours[1].text,
                 'price': price,
                 'duration': duration,
                 'name': name,
+                'link': link
             })
     except:
-        driver.quit()
+        dr.quit()
+        return 'Could not get data'
+    print(len(result))
+    dr.quit()
 
-        # //*[@id = "vBUK"]
-        # //*[@id = "vBUK-info-leg-0"]/div/div[1]/div/img
-        # //*[@id = "vBUK-info-leg-0"]/div/div[2]/div[1]
-        # //*[@id = "vBUK-info-leg-0"]/div/div[4]/div[1]
-        # //*[@id = "U6W0-mb-aE-11246a416c6-price-text"]
-        # /html/body/div[1]/div[1]/main/div/div[2]/div[2]/div[1]/div[2]/div[1]/div[2]/div[4]/div[2]/div[1]/div/div[14]
-
-        # //*[@id = "c33Mr-mb-nE038274bfd50-booking-link"]/span
-
-    print(result)
-    driver.quit()
-
-    return result
+    return dict(result=result)
